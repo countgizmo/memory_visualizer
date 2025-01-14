@@ -1,8 +1,14 @@
 package main
 
+import fmt "core:fmt"
 import rl "vendor:raylib"
+import "mach"
 
 main::proc() {
+
+
+  task := mach.mach_task_self()
+  fmt.println(task);
   rl.InitWindow(800, 600, "Memory Visualizer v0.1")
   defer rl.CloseWindow()
 
@@ -21,7 +27,6 @@ main::proc() {
     rl.ClearBackground(rl.WHITE)
     rl.DrawRectangleRec(sample_rec, rl.BLUE)
     rl.DrawText("Memory Region", i32(sample_rec.x + 5), i32(sample_rec.y + 5), 20, rl.YELLOW)
-
     rl.EndDrawing()
   }
 }
