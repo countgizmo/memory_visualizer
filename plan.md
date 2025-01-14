@@ -8,9 +8,9 @@ Success = seeing a window with a colored rectangle
 
 # Day 2: Mach Interface Setup
 
-- [ ] Add Mach system bindings to your project
-- [ ] Get task port for your own process
-- [ ] Print basic process info to console
+- [X] Add Mach system bindings to your project
+- [X] Get task port for your own process
+- [X] Print basic process info to console
 
 Success = seeing your process ID and task port printed
 

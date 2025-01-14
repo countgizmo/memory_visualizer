@@ -6,9 +6,13 @@ import "mach"
 
 main::proc() {
 
+  port := mach.mach_task_self()
+  pid := mach.getpid()
 
-  task := mach.mach_task_self()
-  fmt.println(task);
+  fmt.println("Current process(task):")
+  fmt.printf(" PID: %d\n", pid)
+  fmt.printf(" Port: %d\n\n", port)
+
   rl.InitWindow(800, 600, "Memory Visualizer v0.1")
   defer rl.CloseWindow()
 
