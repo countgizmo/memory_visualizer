@@ -12,10 +12,11 @@ RectDimension :: struct {
   height: f32,
 }
 
-get_rect_dimension :: proc(size: u64, min_dim: f32, max_dim: f32) -> RectDimension {
+get_rect_width :: proc(size: u64, min_dim: f32, max_dim: f32) -> f32 {
   MIN_BYTES : f32 = 1024                // 1 KB
   MAX_BYTES : f32 = 1024 * 1024 * 1024  // 1 GB
 
+  // Logarithm stuff
   size_f := f32(size)
   log_size := math.log_f32(2, max(MIN_BYTES, size_f))
   log_min := math.log_f32(2, MIN_BYTES)
@@ -24,12 +25,7 @@ get_rect_dimension :: proc(size: u64, min_dim: f32, max_dim: f32) -> RectDimensi
   // Normalize to 0-1
   normalized := (log_size - log_min) / (log_max - log_min)
 
-  WIDTH_SCALE :: 1.3
-
-  return RectDimension {
-    width = min_dim + (normalized * WIDTH_SCALE) * (max_dim - min_dim),
-    height = min_dim + normalized * (max_dim - min_dim)
-  }
+  return min_dim + normalized * (max_dim - min_dim)
 }
 
 main::proc() {
@@ -70,16 +66,17 @@ main::proc() {
 
   rl.SetTargetFPS(60)
 
-  dim := get_rect_dimension(size, 50, 500)
+  height :: 50
   sample_rec := rl.Rectangle{
       x = 10,
       y = 20,
-      width = dim.width,
-      height = dim.height,
+      width = get_rect_width(size, 50, 500),
+      height = height,
   }
 
   size_kb := size / 1024
   size_text := fmt.ctprintf("%dkb", size_kb)
+  address_text := fmt.ctprintf("0x%x", address)
 
   for !rl.WindowShouldClose() {
     rl.BeginDrawing()
@@ -87,6 +84,7 @@ main::proc() {
     rl.ClearBackground(rl.WHITE)
     rl.DrawRectangleRec(sample_rec, rl.BLUE)
     rl.DrawText(size_text, i32(sample_rec.x + 5), i32(sample_rec.y + 5), 20, rl.YELLOW)
+    rl.DrawText(address_text, i32(sample_rec.x + 10), i32(sample_rec.y + sample_rec.height - 13), 13, rl.PINK)
     rl.EndDrawing()
   }
 }
