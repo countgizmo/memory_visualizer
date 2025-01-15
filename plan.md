@@ -16,10 +16,10 @@ Success = seeing your process ID and task port printed
 
 # Day 3: Single Region Query
 
-- [ ] Query one memory region using vm_region_recurse
-- [ ] Print region info (address, size, protection)
-- [ ] Convert this info into a rectangle position/size
-- [ ] Draw the actual region instead of placeholder
+- [X] Query one memory region using vm_region_recurse
+- [X] Print region info (address, size, protection)
+- [X] Convert this info into a rectangle position/size
+- [X] Draw the actual region instead of placeholder
 
 Success = seeing one real memory region visualized
 

@@ -5,6 +5,32 @@ import "base:runtime"
 import fmt "core:fmt"
 import rl "vendor:raylib"
 import "mach"
+import "core:math"
+
+RectDimension :: struct {
+  width: f32,
+  height: f32,
+}
+
+get_rect_dimension :: proc(size: u64, min_dim: f32, max_dim: f32) -> RectDimension {
+  MIN_BYTES : f32 = 1024                // 1 KB
+  MAX_BYTES : f32 = 1024 * 1024 * 1024  // 1 GB
+
+  size_f := f32(size)
+  log_size := math.log_f32(2, max(MIN_BYTES, size_f))
+  log_min := math.log_f32(2, MIN_BYTES)
+  log_max := math.log_f32(2, MAX_BYTES)
+
+  // Normalize to 0-1
+  normalized := (log_size - log_min) / (log_max - log_min)
+
+  WIDTH_SCALE :: 1.3
+
+  return RectDimension {
+    width = min_dim + (normalized * WIDTH_SCALE) * (max_dim - min_dim),
+    height = min_dim + normalized * (max_dim - min_dim)
+  }
+}
 
 main::proc() {
 
@@ -18,20 +44,6 @@ main::proc() {
   info: mach.VM_Region_Basic_Info_64
   info_count: u32 = size_of(mach.VM_Region_Basic_Info_64) / size_of(c.int)
 
-
-
-  // Convert our struct to a byte slice to inspect its memory
-    info_bytes := transmute([]byte)runtime.Raw_Slice{
-        data = &info,
-        len = size_of(mach.VM_Region_Basic_Info_64),
-    }
-
-    fmt.println("\nBefore call, struct contents (in bytes):")
-    for b, i in info_bytes {
-        if i % 4 == 0 do fmt.printf("\nOffset %2d: ", i)
-        fmt.printf("%02x ", b)
-    }
-
   memory_top_region := mach.vm_region_recurse_64(
       port,
       &address,
@@ -40,15 +52,8 @@ main::proc() {
       &info,
       &info_count)
 
-  fmt.println("\n\nAfter call, struct contents (in bytes):")
-    for b, i in info_bytes {
-        if i % 4 == 0 do fmt.printf("\nOffset %2d: ", i)
-        fmt.printf("%02x ", b)
-    }
-
-
   if memory_top_region == mach.KERN_SUCCESS {
-    fmt.printf("Toop memory region:\n")
+    fmt.printf("Top memory region:\n")
     fmt.printf("  Address: 0x%x\n", address)
     fmt.printf("  Size: %d bytes\n", size)
     fmt.printf("  Protection: 0x%x\n", info.protection)
@@ -65,19 +70,23 @@ main::proc() {
 
   rl.SetTargetFPS(60)
 
+  dim := get_rect_dimension(size, 50, 500)
   sample_rec := rl.Rectangle{
       x = 10,
       y = 20,
-      width = 400,
-      height = 100,
+      width = dim.width,
+      height = dim.height,
   }
+
+  size_kb := size / 1024
+  size_text := fmt.ctprintf("%dkb", size_kb)
 
   for !rl.WindowShouldClose() {
     rl.BeginDrawing()
 
     rl.ClearBackground(rl.WHITE)
     rl.DrawRectangleRec(sample_rec, rl.BLUE)
-    rl.DrawText("Memory Region", i32(sample_rec.x + 5), i32(sample_rec.y + 5), 20, rl.YELLOW)
+    rl.DrawText(size_text, i32(sample_rec.x + 5), i32(sample_rec.y + 5), 20, rl.YELLOW)
     rl.EndDrawing()
   }
 }

@@ -13,7 +13,7 @@ VM_Region_Basic_Info_64 :: struct {
     max_protection: u32,
     inheritance: u32,
     shared: b32,
-    reserved: u32,
+    reserved: b32,
     offset: u64,
     behavior: u32,
     user_wired_count: u16,
