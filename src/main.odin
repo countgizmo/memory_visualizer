@@ -2,14 +2,14 @@ package main
 
 import "core:c"
 import "base:runtime"
-import fmt "core:fmt"
+import "core:fmt"
 import rl "vendor:raylib"
 import "mach"
 import "core:math"
 
-RectDimension :: struct {
-  width: f32,
-  height: f32,
+MemoryRegion :: struct {
+  size: u64,
+  address: u64,
 }
 
 get_rect_width :: proc(size: u64, min_dim: f32, max_dim: f32) -> f32 {
@@ -28,6 +28,25 @@ get_rect_width :: proc(size: u64, min_dim: f32, max_dim: f32) -> f32 {
   return min_dim + normalized * (max_dim - min_dim)
 }
 
+render_mem_region :: proc(region: MemoryRegion, region_idx: int) {
+  height :: 15
+  sample_rec := rl.Rectangle{
+    x = f32(5 * region_idx),
+    y = f32(20 * region_idx + 3),
+    width = get_rect_width(region.size, 50, 500),
+    height = height,
+  }
+
+  rl.DrawRectangleRec(sample_rec, rl.BLUE)
+
+  size_kb := region.size / 1024
+  size_text := fmt.ctprintf("%dkb", size_kb)
+  address_text := fmt.ctprintf("0x%x", region.address)
+
+  rl.DrawText(size_text, i32(sample_rec.x + 5), i32(sample_rec.y), 12, rl.YELLOW)
+  //rl.DrawText(address_text, i32(sample_rec.x + 10), i32(sample_rec.y + sample_rec.height - 13), 13, rl.PINK)
+}
+
 main::proc() {
 
   port := mach.mach_task_self()
@@ -40,7 +59,11 @@ main::proc() {
   info: mach.VM_Region_Basic_Info_64
   info_count: u32 = size_of(mach.VM_Region_Basic_Info_64) / size_of(c.int)
 
-  memory_top_region := mach.vm_region_recurse_64(
+
+  results: [dynamic]MemoryRegion
+
+  for {
+    mem_region := mach.vm_region_recurse_64(
       port,
       &address,
       &size,
@@ -48,43 +71,40 @@ main::proc() {
       &info,
       &info_count)
 
-  if memory_top_region == mach.KERN_SUCCESS {
-    fmt.printf("Top memory region:\n")
-    fmt.printf("  Address: 0x%x\n", address)
-    fmt.printf("  Size: %d bytes\n", size)
-    fmt.printf("  Protection: 0x%x\n", info.protection)
-  } else {
-    fmt.printf("Error getting region info: %d\n", memory_top_region)
-  }
+    if mem_region == mach.KERN_INVALID_ADDRESS {
+      break;
+    }
 
   fmt.println("Current process(task):")
   fmt.printf(" PID: %d\n", pid)
   fmt.printf(" Port: %d\n\n", port)
+    if mem_region != mach.KERN_SUCCESS {
+      fmt.printf("ERROR: Failed getting region info: %d\n", mem_region)
+      break;
+    }
 
-  rl.InitWindow(800, 600, "Memory Visualizer v0.1")
+    append(&results, MemoryRegion {
+      size = size,
+      address = address,
+    })
+
+    address = address + size
+  }
+
+  rl.InitWindow(1600, 1024, "Memory Visualizer v0.1")
   defer rl.CloseWindow()
 
   rl.SetTargetFPS(60)
-
-  height :: 50
-  sample_rec := rl.Rectangle{
-      x = 10,
-      y = 20,
-      width = get_rect_width(size, 50, 500),
-      height = height,
-  }
-
-  size_kb := size / 1024
-  size_text := fmt.ctprintf("%dkb", size_kb)
-  address_text := fmt.ctprintf("0x%x", address)
 
   for !rl.WindowShouldClose() {
     rl.BeginDrawing()
 
     rl.ClearBackground(rl.WHITE)
-    rl.DrawRectangleRec(sample_rec, rl.BLUE)
-    rl.DrawText(size_text, i32(sample_rec.x + 5), i32(sample_rec.y + 5), 20, rl.YELLOW)
-    rl.DrawText(address_text, i32(sample_rec.x + 10), i32(sample_rec.y + sample_rec.height - 13), 13, rl.PINK)
+
+    for region, idx in results {
+      render_mem_region(region, idx);
+    }
+
     rl.EndDrawing()
   }
 }

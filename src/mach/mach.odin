@@ -24,6 +24,7 @@ VM_Region_Basic_Info_64 :: struct {
 }
 
 KERN_SUCCESS :: 0
+KERN_INVALID_ADDRESS :: 1
 KERN_INVALID_ARGUMENT :: 4
 KERN_NOT_IN_SET :: 138
 
