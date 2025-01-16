@@ -52,6 +52,11 @@ main::proc() {
   port := mach.mach_task_self()
   pid := mach.getpid()
 
+  fmt.println("Current process(task):")
+  fmt.printf(" PID: %d\n", pid)
+  fmt.printf(" Port: %d\n\n", port)
+
+
   // Memory info
   address: u64 = 0
   size: u64 = 0
@@ -75,9 +80,6 @@ main::proc() {
       break;
     }
 
-  fmt.println("Current process(task):")
-  fmt.printf(" PID: %d\n", pid)
-  fmt.printf(" Port: %d\n\n", port)
     if mem_region != mach.KERN_SUCCESS {
       fmt.printf("ERROR: Failed getting region info: %d\n", mem_region)
       break;

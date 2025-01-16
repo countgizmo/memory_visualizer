@@ -1,1 +1,1 @@
-odin run src
+odin build src -out:mem_viz
