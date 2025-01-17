@@ -31,7 +31,7 @@ get_rect_width :: proc(size: u64, min_dim: f32, max_dim: f32) -> f32 {
 render_mem_region :: proc(region: MemoryRegion, region_idx: int) {
   height :: 15
   sample_rec := rl.Rectangle{
-    x = f32(5 * region_idx),
+    x = 150,
     y = f32(20 * region_idx + 3),
     width = get_rect_width(region.size, 50, 500),
     height = height,
@@ -44,11 +44,19 @@ render_mem_region :: proc(region: MemoryRegion, region_idx: int) {
   address_text := fmt.ctprintf("0x%x", region.address)
 
   rl.DrawText(size_text, i32(sample_rec.x + 5), i32(sample_rec.y), 12, rl.YELLOW)
-  //rl.DrawText(address_text, i32(sample_rec.x + 10), i32(sample_rec.y + sample_rec.height - 13), 13, rl.PINK)
+  rl.DrawText(address_text, 0, i32(sample_rec.y), 12, rl.PINK)
 }
 
 main::proc() {
 
+  // Let's gather different special ports
+self_port := mach.mach_task_self()          // Our known 515
+host_port := mach.mach_host_self()          // Host port
+clock_port := mach.host_get_clock_service() // Clock service port
+
+fmt.printf("Self port:  %d (0x%x)\n", self_port, self_port)
+fmt.printf("Host port:  %d (0x%x)\n", host_port, host_port)
+fmt.printf("Clock port: %d (0x%x)\n", clock_port, clock_port)
   port := mach.mach_task_self()
   pid := mach.getpid()
 
@@ -101,7 +109,7 @@ main::proc() {
   for !rl.WindowShouldClose() {
     rl.BeginDrawing()
 
-    rl.ClearBackground(rl.WHITE)
+    rl.ClearBackground(rl.BLACK)
 
     for region, idx in results {
       render_mem_region(region, idx);

@@ -31,6 +31,8 @@ KERN_NOT_IN_SET :: 138
 @(default_calling_convention="c")
 foreign sys {
     mach_task_self:: proc() -> Mach_Port ---
+    mach_host_self:: proc() -> Mach_Port ---
+    host_get_clock_service :: proc() -> Mach_Port ---
     getpid :: proc() -> Pid ---
     task_for_pid :: proc(target_tport: Mach_Port, pid: c.int, t: ^Mach_Port) -> Kern_Return ---
     mach_error_string :: proc(error_value: Kern_Return) -> cstring ---

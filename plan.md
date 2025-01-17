@@ -25,17 +25,17 @@ Success = seeing one real memory region visualized
 
 # Day 4: Region Iterator
 
-- [ ] Create iterator for memory regions
-- [ ] Store regions in a simple array/slice
-- [ ] Print all regions to console first
+- [X] Create iterator for memory regions
+- [X] Store regions in a simple array/slice
+- [X] Print all regions to console first
 
 Success = seeing list of all memory regions
 
 # Day 5: Full Visualization
 
-- [ ] Draw all memory regions as rectangles
+- [x] Draw all memory regions as rectangles
 - [ ] Color code based on protection flags (read/write/execute)
-- [ ] Add basic text labels showing addresses
+- [X] Add basic text labels showing addresses
 
 Success = seeing complete memory map
 
