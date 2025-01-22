@@ -34,7 +34,7 @@ Success = seeing list of all memory regions
 # Day 5: Full Visualization
 
 - [x] Draw all memory regions as rectangles
-- [ ] Color code based on protection flags (read/write/execute)
+- [X] Color code based on protection flags (read/write/execute)
 - [X] Add basic text labels showing addresses
 
 Success = seeing complete memory map
