@@ -10,6 +10,7 @@ import "core:math"
 MemoryRegion :: struct {
   size: u64,
   address: u64,
+  protection: u32,
 }
 
 get_rect_width :: proc(size: u64, min_dim: f32, max_dim: f32) -> f32 {
@@ -28,6 +29,9 @@ get_rect_width :: proc(size: u64, min_dim: f32, max_dim: f32) -> f32 {
   return min_dim + normalized * (max_dim - min_dim)
 }
 
+SIZE_TEXT_COLOR :rl.Color: {226, 232, 240, 255}
+ADDRESS_TEXT_COLOR :rl.Color: {45, 55, 72, 255}
+
 render_mem_region :: proc(region: MemoryRegion, region_idx: int) {
   height :: 15
   sample_rec := rl.Rectangle{
@@ -37,26 +41,36 @@ render_mem_region :: proc(region: MemoryRegion, region_idx: int) {
     height = height,
   }
 
-  rl.DrawRectangleRec(sample_rec, rl.BLUE)
+  rl.DrawRectangleRec(sample_rec, protection_color(region.protection))
 
   size_kb := region.size / 1024
   size_text := fmt.ctprintf("%dkb", size_kb)
   address_text := fmt.ctprintf("0x%x", region.address)
 
-  rl.DrawText(size_text, i32(sample_rec.x + 5), i32(sample_rec.y), 12, rl.YELLOW)
-  rl.DrawText(address_text, 0, i32(sample_rec.y), 12, rl.PINK)
+  rl.DrawText(size_text, i32(sample_rec.x + 5), i32(sample_rec.y), 12, SIZE_TEXT_COLOR)
+  rl.DrawText(address_text, 0, i32(sample_rec.y), 12, ADDRESS_TEXT_COLOR)
+}
+
+BASE_BRIGHTNESS :: 127
+
+protection_color :: proc(protection: u32) -> rl.Color {
+  result: rl.Color = {0, 0, 0, 255}
+
+  is_readable := (protection & mach.VM_PROT_READ) != 0
+  is_writable := (protection & mach.VM_PROT_WRITE) != 0
+  is_executable := (protection & mach.VM_PROT_EXECUTE) != 0
+
+
+  if is_readable do result[0] = BASE_BRIGHTNESS
+  if is_writable do result[1] = BASE_BRIGHTNESS
+  if is_executable do result[2] = BASE_BRIGHTNESS
+
+  return result;
 }
 
 main::proc() {
-
-  // Let's gather different special ports
-self_port := mach.mach_task_self()          // Our known 515
-host_port := mach.mach_host_self()          // Host port
-clock_port := mach.host_get_clock_service() // Clock service port
-
-fmt.printf("Self port:  %d (0x%x)\n", self_port, self_port)
-fmt.printf("Host port:  %d (0x%x)\n", host_port, host_port)
-fmt.printf("Clock port: %d (0x%x)\n", clock_port, clock_port)
+  // OBSERVATION: this port seems to be a constant.
+  // Somehow the system know  that the port is for the self process.
   port := mach.mach_task_self()
   pid := mach.getpid()
 
@@ -96,6 +110,7 @@ fmt.printf("Clock port: %d (0x%x)\n", clock_port, clock_port)
     append(&results, MemoryRegion {
       size = size,
       address = address,
+      protection = info.protection,
     })
 
     address = address + size
@@ -109,7 +124,7 @@ fmt.printf("Clock port: %d (0x%x)\n", clock_port, clock_port)
   for !rl.WindowShouldClose() {
     rl.BeginDrawing()
 
-    rl.ClearBackground(rl.BLACK)
+    rl.ClearBackground({235, 235, 235, 255})
 
     for region, idx in results {
       render_mem_region(region, idx);

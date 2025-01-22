@@ -28,6 +28,11 @@ KERN_INVALID_ADDRESS :: 1
 KERN_INVALID_ARGUMENT :: 4
 KERN_NOT_IN_SET :: 138
 
+VM_PROT_NONE      :: 0x00  // No access permissions
+VM_PROT_READ      :: 0x01
+VM_PROT_WRITE     :: 0x02
+VM_PROT_EXECUTE   :: 0x04
+
 @(default_calling_convention="c")
 foreign sys {
     mach_task_self:: proc() -> Mach_Port ---
