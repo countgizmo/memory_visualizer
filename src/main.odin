@@ -48,7 +48,7 @@ render_mem_region :: proc(region: MemoryRegion, region_idx: int) {
   address_text := fmt.ctprintf("0x%x", region.address)
 
   rl.DrawText(size_text, i32(sample_rec.x + 5), i32(sample_rec.y), 12, SIZE_TEXT_COLOR)
-  rl.DrawText(address_text, 0, i32(sample_rec.y), 12, ADDRESS_TEXT_COLOR)
+  rl.DrawText(address_text, 5, i32(sample_rec.y), 12, ADDRESS_TEXT_COLOR)
 }
 
 BASE_BRIGHTNESS :: 127
